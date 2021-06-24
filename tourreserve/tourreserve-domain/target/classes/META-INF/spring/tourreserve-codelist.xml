@@ -1,0 +1,115 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<bean id="jdbcTemplateForCodeList"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+		<property name="fetchSize"
+			value="${codelist.jdbc.fetchSize:1000}" />
+	</bean>
+
+	<bean id="AbstractJdbcCodeList"
+		class="org.terasoluna.gfw.common.codelist.JdbcCodeList"
+		abstract="true">
+		<property name="jdbcTemplate" ref="jdbcTemplateForCodeList" />
+	</bean>
+
+	<!-- Example for usage of AbstractJdbcCodeList <bean id="CL_SAMPLE" parent="AbstractJdbcCodeList">
+		<property name="querySql" value="SELECT code, code_name FROM t_sample_codes
+		ORDER BY code" /> <property name="valueColumn" value="code" /> <property
+		name="labelColumn" value="code_name" /> </bean> -->
+
+	<!-- * コードリストを利用すること * 顧客登録で利用する、年、月、日のコードリストの定義を追加する。 ```xml -->
+	<!-- START -->
+	<!-- 年のコードリスト -->
+	<bean id="CL_BIRTH_YEAR"
+		class="org.terasoluna.gfw.common.codelist.NumberRangeCodeList">
+		<property name="from" value="1940" />
+		<property name="to" value="2000" />
+	</bean>
+
+	<!-- 月のコードリスト -->
+	<bean id="CL_MONTH"
+		class="org.terasoluna.gfw.common.codelist.NumberRangeCodeList">
+		<property name="from" value="1" />
+		<property name="to" value="12" />
+		<property name="valueFormat" value="%d" />
+		<property name="labelFormat" value="%02d" />
+	</bean>
+
+	<!-- 日のコードリスト -->
+	<bean id="CL_DAY"
+		class="org.terasoluna.gfw.common.codelist.NumberRangeCodeList">
+		<property name="from" value="1" />
+		<property name="to" value="31" />
+		<property name="valueFormat" value="%d" />
+		<property name="labelFormat" value="%02d" />
+	</bean>
+	<!-- END -->
+
+	<bean id="CL_TOUR_DAYS"
+		class="org.terasoluna.gfw.common.codelist.SimpleMapCodeList">
+		<property name="map">
+			<util:map>
+				<entry key="0" value="制限なし" />
+				<entry key="1" value="日帰り" />
+				<entry key="2" value="1泊以下" />
+				<entry key="3" value="2泊以下" />
+				<entry key="4" value="3泊以下" />
+				<entry key="5" value="4泊以下" />
+				<entry key="6" value="5泊以下" />
+			</util:map>
+		</property>
+	</bean>
+
+	<bean id="CL_ARR_PREF" parent="AbstractJdbcCodeList">
+		<property name="querySql"
+			value="SELECT arr_code, arr_name FROM arrival ORDER BY arr_code" />
+		<property name="valueColumn" value="arr_code" />
+		<property name="labelColumn" value="arr_name" />
+	</bean>
+
+	<bean id="CL_DEP_PREF" parent="AbstractJdbcCodeList">
+		<property name="querySql"
+			value="SELECT dep_code, dep_name FROM departure ORDER BY dep_code" />
+		<property name="valueColumn" value="dep_code" />
+		<property name="labelColumn" value="dep_name" />
+	</bean>
+
+	<bean id="CL_ADULT_COUNT"
+		class="org.terasoluna.gfw.common.codelist.NumberRangeCodeList">
+		<property name="from" value="1" />
+		<property name="to" value="5" />
+	</bean>
+
+	<bean id="CL_CHILD_COUNT"
+		class="org.terasoluna.gfw.common.codelist.NumberRangeCodeList">
+		<property name="from" value="0" />
+		<property name="to" value="5" />
+	</bean>
+
+
+
+	<bean id="CL_BASE_PRICE"
+		class="org.terasoluna.gfw.common.codelist.SimpleMapCodeList">
+		<property name="map">
+			<util:map>
+				<entry key="0" value="上限なし" />
+				<entry key="10000" value="10,000円以下" />
+				<entry key="20000" value="20,000円以下" />
+				<entry key="30000" value="30,000円以下" />
+				<entry key="40000" value="40,000円以下" />
+				<entry key="50000" value="50,000円以下" />
+			</util:map>
+		</property>
+	</bean>
+
+
+
+
+
+
+</beans>

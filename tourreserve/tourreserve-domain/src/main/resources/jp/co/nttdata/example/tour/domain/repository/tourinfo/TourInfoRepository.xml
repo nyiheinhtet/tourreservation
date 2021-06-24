@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+    namespace="jp.co.nttdata.example.tour.domain.repository.tourinfo.TourInfoRepository">
+
+    <resultMap type="TourInfo" id="tourInfoMap">
+        <result property="tourCode" column="tour_code" />
+        <result property="tourName" column="tour_name" />
+        <result property="planNo" column="plan_no" />
+        <result property="plannedDay" column="planned_day" />
+        <result property="tourDays" column="tour_days" />
+        <result property="depDay" column="dep_day" /><!-- -->
+        <result property="avaRecMax" column="ava_rec_max" />
+        <result property="basePrice" column="base_price" /><!-- -->
+        <result property="conductor" column="conductor" />
+        <result property="tourAbs" column="tour_abs" />
+        <association property="departure" javaType="Departure">
+            <result property="depCode" column="dep_code" />
+            <result property="depName" column="dep_name" />
+        </association>
+        <association property="arrival" javaType="Arrival">
+            <result property="arrCode" column="arr_code" />
+            <result property="arrName" column="arr_name" />
+        </association>
+        <association property="accommodation"
+            javaType="Accommodation">
+            <result property="accomCode" column="accom_code" />
+            <result property="accomName" column="accom_name" />
+            <result property="accomTel" column="accom_tel" />
+        </association>
+    </resultMap>
+
+    <select id="findPageBySearchCriteria"
+        parameterType="TourInfoSearchCriteria" resultMap="tourInfoMap">
+        select
+        t.tour_code,
+        t.tour_name,
+        d.dep_name,
+        t.tour_days,
+        t.dep_Day,
+        a.arr_name,
+        t.base_price
+        from
+        TOURINFO t
+        inner join
+        DEPARTURE d
+        on
+        t.DEP_CODE = d.DEP_CODE
+        inner
+        join
+        ARRIVAL a
+        on t.ARR_CODE = a.ARR_CODE
+        inner join
+        ACCOMMODATION c
+        on
+        t.ACCOM_CODE = c.ACCOM_CODE
+        <![CDATA[
+        WHERE
+        (
+        NOT EXISTS (
+        SELECT r.tour_code
+        FROM reserve AS r
+        WHERE r.tour_code = t.tour_code
+        )
+        OR
+        EXISTS (
+        SELECT r.tour_code
+        FROM reserve AS r
+        WHERE r.tour_code = t.tour_code
+        AND (r.adult_count + r.child_count + #{criteria.adultCount} + #{criteria.childCount}) <= t.ava_rec_max
+        )
+        ) ]]>
+        AND t.dep_day = #{criteria.depDay}
+        AND t.dep_code = #{criteria.depCode}
+        AND t.arr_code = #{criteria.arrCode}
+        <if test="criteria.tourDays > 0">
+        <![CDATA[
+        AND t.tour_days <= #{criteria.tourDays}
+        ]]>
+        </if>
+        <if test="criteria.basePrice > 0">
+        <![CDATA[
+            AND t.base_price <= #{criteria.basePrice}
+            ]]>
+        </if>
+        ORDER BY
+        t.tour_days DESC,
+        t.base_price DESC
+        LIMIT #{pageable.pageSize}
+        OFFSET #{pageable.offset}
+    </select>
+
+    <!-- Get Total count of tour information by search criteria -->
+    <select id="countBySearchCriteria" resultType="long">
+        SELECT
+        COUNT(*)
+        FROM
+        tourinfo AS t
+        INNER JOIN departure AS d ON t.dep_code
+        = d.dep_code
+        INNER JOIN arrival AS a ON t.arr_code = a.arr_code
+        INNER
+        JOIN accommodation AS ac ON t.accom_code = ac.accom_code
+        <![CDATA[
+        WHERE
+        (
+        NOT EXISTS (
+        SELECT r.tour_code
+        FROM reserve AS r
+        WHERE r.tour_code = t.tour_code
+        )
+        OR
+        EXISTS (
+        SELECT r.tour_code
+        FROM reserve AS r
+        WHERE r.tour_code = t.tour_code
+        AND (r.adult_count + r.child_count + #{criteria.adultCount} + #{criteria.childCount}) <= t.ava_rec_max
+        )
+        ) ]]>
+        AND t.dep_day = #{criteria.depDay}
+        AND t.dep_code = #{criteria.depCode}
+        AND t.arr_code = #{criteria.arrCode}
+        <if test="criteria.tourDays > 0">
+        <![CDATA[
+        AND t.tour_days <= #{criteria.tourDays}
+        ]]>
+        </if>
+        <if test="criteria.basePrice > 0">
+        <![CDATA[
+            AND t.base_price <= #{criteria.basePrice}
+         ]]>
+        </if>
+     </select>
+
+    <sql id="sqlCommon">
+        <![CDATA[
+        WHERE (NOT EXISTS (
+        SELECT
+        r.tour_code
+        FROM
+        reserve AS r
+        WHERE
+        r.tour_code =
+        t.tour_code))
+        OR
+        (EXISTS (
+        SELECT
+        r.tour_code
+        FROM
+        reserve AS r
+        WHERE
+        r.tour_code = t.tour_code
+        AND
+        (r.adult_count + r.child_count + #{​​​​​​​criteria.adultCount} + #{​​​​​​​criteria.childCount}) <=
+        t.ava_rec_max))]]>
+        AND
+        t.dep_day = #{​​​​​​​criteria.depDay}​​​​​​​
+        AND
+        d.dep_code =
+        #{​​​​​​​criteria.depCode}​​​​​​​
+        AND
+        a.arr_code =
+        #{​​​​​​​criteria.arrCode}​​​​​​​
+        <if test="criteria.tourDays > 0">
+        <![CDATA[
+        AND t.tour_days <= #{criteria.tourDays}
+        ]]>
+        </if>
+        <if test="criteria.basePrice > 0">
+        <![CDATA[
+            AND t.base_price <= #{criteria.basePrice}
+        ]]>
+        </if>
+    </sql>
+</mapper>
