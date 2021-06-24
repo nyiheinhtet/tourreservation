@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Title: tourreserve-initdb
+Implementation-Version: 1.0.0-SNAPSHOT
+Built-By: nh.htet
+Implementation-Vendor-Id: jp.co.nttdata.example.tour
+Build-Jdk: 1.8.0_202
+Created-By: Maven Integration for Eclipse
+Implementation-Vendor: TERASOLUNA Framework Team
+
